@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>你是 PHIGHTING! 裡的誰？</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+:root {
+  --bg: #07080f;
+  --bg2: #0d0f1e;
+  --card: #111427;
+  --card2: #181c35;
+  --neon-cyan: #00f5ff;
+  --neon-pink: #ff2d78;
+  --neon-purple: #b44cff;
+  --neon-yellow: #ffe600;
+  --neon-green: #00ff9d;
+  --text: #e8eaff;
+  --text-dim: #7b80b0;
+  --border: rgba(0,245,255,0.18);
+  --glow-c: 0 0 16px rgba(0,245,255,0.5);
+  --glow-p: 0 0 16px rgba(180,76,255,0.5);
+  --radius: 12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans TC', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* === SCANLINES BG === */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* === GRID BG === */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,255,0.035) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+
+/* === HEADER === */
+.site-header {
+  text-align: center;
+  padding: 48px 0 32px;
+}
+
+.game-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: var(--neon-cyan);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  opacity: 0.8;
+}
+
+.site-title {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: clamp(26px, 6vw, 52px);
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 18px rgba(0,245,255,0.4));
+  margin-bottom: 12px;
+}
+
+.site-sub {
+  color: var(--text-dim);
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+/* === PANELS === */
+.panel {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+.panel.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* === INTRO === */
+.intro-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(0,245,255,0.06);
+  margin-bottom: 24px;
+}
+
+.intro-card p {
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.8;
+  max-width: 540px;
+  margin: 0 auto 28px;
+}
+
+.neon-pill {
+  display: inline-flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.neon-pill span {
+  background: rgba(0,245,255,0.07);
+  border: 1px solid rgba(0,245,255,0.25);
+  border-radius: 99px;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-family: 'Orbitron', monospace;
+  color: var(--neon-cyan);
+  letter-spacing: 1px;
+}
+
+.btn-start {
+  display: inline-block;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 2px;
+  color: var(--bg);
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  border: none;
+  border-radius: 8px;
+  padding: 14px 44px;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.15s;
+  box-shadow: 0 0 28px rgba(0,245,255,0.35);
+}
+.btn-start:hover { filter: brightness(1.15); transform: translateY(-2px); }
+.btn-start:active { transform: translateY(0); }
+
+/* === PROGRESS === */
+.progress-wrap {
+  margin-bottom: 24px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progress-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  color: var(--neon-cyan);
+  letter-spacing: 2px;
+}
+
+.progress-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.progress-bar-bg {
+  background: rgba(0,245,255,0.08);
+  border: 1px solid rgba(0,245,255,0.15);
+  border-radius: 99px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+  border-radius: 99px;
+  transition: width 0.4s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 0 10px rgba(0,245,255,0.6);
+}
+
+/* === QUESTION CARD === */
+.q-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 40px rgba(0,245,255,0.04);
+  animation: fadeIn 0.35s ease;
+}
+
+.q-category {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--neon-purple);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.q-number {
+  font-family: 'Orbitron', monospace;
+  font-size: 36px;
+  font-weight: 900;
+  color: rgba(0,245,255,0.12);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.q-text {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+
+.options-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.opt-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--card2);
+  border: 1px solid rgba(180,76,255,0.2);
+  border-radius: 8px;
+  padding: 14px 18px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.opt-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--neon-purple);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.opt-btn:hover {
+  border-color: rgba(180,76,255,0.6);
+  background: rgba(180,76,255,0.1);
+  box-shadow: 0 0 14px rgba(180,76,255,0.2);
+  transform: translateX(3px);
+}
+
+.opt-btn:hover::before { opacity: 1; }
+
+.opt-btn.selected {
+  border-color: var(--neon-cyan);
+  background: rgba(0,245,255,0.1);
+  box-shadow: 0 0 16px rgba(0,245,255,0.25);
+}
+
+.opt-btn.selected::before {
+  background: var(--neon-cyan);
+  opacity: 1;
+}
+
+.opt-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: var(--neon-purple);
+  letter-spacing: 1px;
+  margin-right: 8px;
+}
+
+.opt-btn.selected .opt-label { color: var(--neon-cyan); }
+
+/* === NAV BUTTONS === */
+.nav-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.btn-nav {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  padding: 11px 26px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid;
+}
+
+.btn-prev {
+  background: transparent;
+  border-color: rgba(0,245,255,0.25);
+  color: var(--neon-cyan);
+}
+.btn-prev:hover { background: rgba(0,245,255,0.08); }
+.btn-prev:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.btn-next {
+  background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 0 18px rgba(180,76,255,0.35);
+}
+.btn-next:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.btn-next:disabled { opacity: 0.35; cursor: not-allowed; filter: none; transform: none; }
+
+/* === FACT BOX === */
+.fact-box {
+  background: rgba(180,76,255,0.07);
+  border: 1px solid rgba(180,76,255,0.2);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.fact-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* === RESULT PANEL === */
+.result-hero {
+  text-align: center;
+  padding: 40px 0 28px;
+}
+
+.result-badge {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--neon-yellow);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.result-name {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: clamp(32px, 8vw, 64px);
+  background: linear-gradient(135deg, var(--neon-yellow), var(--neon-pink), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(255,230,0,0.4));
+  margin-bottom: 8px;
+  animation: glitch 4s infinite;
+}
+
+@keyframes glitch {
+  0%,94%,100% { transform: none; }
+  95% { transform: skewX(-2deg) translateX(2px); }
+  96% { transform: skewX(2deg) translateX(-2px); }
+  97% { transform: none; }
+}
+
+.result-class {
+  display: inline-block;
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  padding: 5px 18px;
+  border-radius: 99px;
+  margin-bottom: 20px;
+}
+.class-melee  { background: rgba(255,45,120,0.15); border: 1px solid var(--neon-pink);   color: var(--neon-pink);   box-shadow: 0 0 12px rgba(255,45,120,0.3); }
+.class-ranged { background: rgba(0,245,255,0.12);  border: 1px solid var(--neon-cyan);   color: var(--neon-cyan);   box-shadow: 0 0 12px rgba(0,245,255,0.3); }
+.class-support{ background: rgba(0,255,157,0.1);   border: 1px solid var(--neon-green);  color: var(--neon-green);  box-shadow: 0 0 12px rgba(0,255,157,0.3); }
+
+.result-img-wrap {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  border: 2px solid var(--neon-yellow);
+  box-shadow: 0 0 40px rgba(255,230,0,0.25), 0 0 80px rgba(255,230,0,0.1);
+  overflow: hidden;
+  background: var(--card2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: spin-glow 6s linear infinite;
+}
+
+@keyframes spin-glow {
+  0%   { box-shadow: 0 0 40px rgba(255,230,0,0.25), 0 0 80px rgba(255,230,0,0.1); }
+  33%  { box-shadow: 0 0 40px rgba(180,76,255,0.35), 0 0 80px rgba(180,76,255,0.12); }
+  66%  { box-shadow: 0 0 40px rgba(0,245,255,0.35), 0 0 80px rgba(0,245,255,0.12); }
+  100% { box-shadow: 0 0 40px rgba(255,230,0,0.25), 0 0 80px rgba(255,230,0,0.1); }
+}
+
+.result-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.result-img-placeholder {
+  font-size: 64px;
+  filter: drop-shadow(0 0 12px rgba(255,230,0,0.5));
+}
+
+.similarity-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.sim-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+
+.sim-pct {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 28px;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 14px rgba(255,230,0,0.5);
+}
+
+/* === RESULT CARDS === */
+.result-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  margin-bottom: 16px;
+}
+
+.rs-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--neon-cyan);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0,245,255,0.12);
+}
+
+.rs-intro {
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--text-dim);
+  margin-bottom: 0;
+}
+
+.trait-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.trait-list li {
+  background: rgba(0,245,255,0.07);
+  border: 1px solid rgba(0,245,255,0.2);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--neon-cyan);
+}
+
+.strength-list, .caution-list {
+  list-style: none;
+}
+
+.strength-list li, .caution-list li {
+  padding: 9px 0 9px 22px;
+  position: relative;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  border-bottom: 1px solid rgba(0,245,255,0.06);
+}
+
+.strength-list li:last-child, .caution-list li:last-child { border-bottom: none; }
+
+.strength-list li::before {
+  content: '▲';
+  position: absolute;
+  left: 0;
+  color: var(--neon-green);
+  font-size: 10px;
+  top: 12px;
+}
+
+.caution-list li::before {
+  content: '●';
+  position: absolute;
+  left: 0;
+  color: var(--neon-pink);
+  font-size: 8px;
+  top: 13px;
+}
+
+/* === CHART === */
+.chart-wrap {
+  overflow-x: auto;
+}
+
+.chart-bar-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 280px;
+}
+
+.chart-item {
+  display: grid;
+  grid-template-columns: 80px 1fr 36px;
+  gap: 10px;
+  align-items: center;
+}
+
+.chart-name {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chart-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 99px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.chart-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 1s cubic-bezier(.4,0,.2,1);
+}
+
+.chart-val {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  color: var(--text-dim);
+}
+
+/* === SECOND CHAR === */
+.second-char-card {
+  background: var(--card2);
+  border: 1px solid rgba(180,76,255,0.2);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.second-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid rgba(180,76,255,0.5);
+  object-fit: cover;
+  background: var(--card);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  overflow: hidden;
+}
+
+.second-img img { width: 100%; height: 100%; object-fit: cover; }
+
+.second-info { flex: 1; }
+
+.second-name {
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--neon-purple);
+  margin-bottom: 6px;
+}
+
+.second-text {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+/* === RESULT ACTIONS === */
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+.btn-action {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  padding: 12px 24px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid;
+  text-transform: uppercase;
+}
+
+.btn-retry {
+  background: transparent;
+  border-color: rgba(0,245,255,0.35);
+  color: var(--neon-cyan);
+}
+.btn-retry:hover { background: rgba(0,245,255,0.08); box-shadow: 0 0 14px rgba(0,245,255,0.2); }
+
+.btn-share {
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 0 18px rgba(255,45,120,0.3);
+}
+.btn-share:hover { filter: brightness(1.12); }
+
+/* === LOADING === */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(7,8,15,0.9);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+}
+.loading-overlay.show { display: flex; }
+
+.spinner {
+  width: 56px; height: 56px;
+  border: 3px solid rgba(0,245,255,0.15);
+  border-top-color: var(--neon-cyan);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--neon-cyan);
+  animation: pulse 1.2s infinite;
+}
+
+/* === TOAST === */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--card2);
+  border: 1px solid var(--neon-cyan);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--neon-cyan);
+  box-shadow: 0 0 24px rgba(0,245,255,0.3);
+  transition: transform 0.3s ease;
+  z-index: 200;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* === RESPONSIVE === */
+@media (max-width: 600px) {
+  .q-card { padding: 22px 16px; }
+  .result-section { padding: 20px 16px; }
+  .second-char-card { flex-direction: column; text-align: center; }
+  .chart-item { grid-template-columns: 64px 1fr 28px; }
+  .intro-card { padding: 24px 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="site-header">
+    <div class="game-label">Roblox PHIGHTING!</div>
+    <h1 class="site-title">你是誰？</h1>
+    <p class="site-sub">15 題心理測驗 · 找出你的專屬 Phighter</p>
+  </header>
+
+  <!-- INTRO -->
+  <div id="panel-intro" class="panel active">
+    <div class="intro-card">
+      <p>回答 15 道問題，系統將根據你的個性、思維方式與行動模式，精準配對 15 位 PHIGHTING! 角色中最像你的那一位。</p>
+      <div class="neon-pill">
+        <span>15 題</span>
+        <span>15 角色</span>
+        <span>動態分析</span>
+        <span>無固定模板</span>
+      </div>
+      <button class="btn-start" onclick="startQuiz()">開始測驗</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="panel-quiz" class="panel">
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span class="progress-label">PROGRESS</span>
+        <span class="progress-num" id="prog-num">0 / 15</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="prog-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="q-card" id="q-card">
+      <div class="q-category" id="q-cat"></div>
+      <div class="q-number" id="q-num-big"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options-grid" id="options-grid"></div>
+    </div>
+
+    <div class="fact-box">
+      <span class="fact-icon">⚡</span>
+      <span id="fact-text"></span>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-nav btn-prev" id="btn-prev" onclick="prevQ()" disabled>← 上一題</button>
+      <button class="btn-nav btn-next" id="btn-next" onclick="nextQ()" disabled>下一題 →</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="panel-result" class="panel">
+
+    <div class="result-hero">
+      <div class="result-badge">✦ 你的 PHIGHTING! 角色 ✦</div>
+      <div class="result-name" id="r-name"></div>
+      <div id="r-class"></div>
+      <div class="result-img-wrap" id="r-img-wrap"></div>
+      <div class="similarity-row">
+        <span class="sim-label">相似度</span>
+        <span class="sim-pct" id="r-pct"></span>
+      </div>
+    </div>
+
+    <div class="result-section">
+      <div class="rs-title">為什麼是你？</div>
+      <p class="rs-intro" id="r-why"></p>
+    </div>
+
+    <div class="result-section">
+      <div class="rs-title">核心特質</div>
+      <ul class="trait-list" id="r-traits"></ul>
+    </div>
+
+    <div class="result-section">
+      <div class="rs-title">你的優勢</div>
+      <ul class="strength-list" id="r-strengths"></ul>
+    </div>
+
+    <div class="result-section">
+      <div class="rs-title">需要注意的地方</div>
+      <ul class="caution-list" id="r-cautions"></ul>
+    </div>
+
+    <div class="result-section">
+      <div class="rs-title">第二相似角色</div>
+      <div class="second-char-card" id="r-second"></div>
+    </div>
+
+    <div class="result-section">
+      <div class="rs-title">分數統計圖表</div>
+      <div class="chart-wrap">
+        <ul class="chart-bar-list" id="r-chart"></ul>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-action btn-retry" onclick="retryQuiz()">重新測驗</button>
+      <button class="btn-action btn-share" onclick="shareResult()">分享結果</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">ANALYSING...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================
+   DATA
+   ============================ */
+
+const CHARS = {
+  Sword:      { name:'Sword',      cls:'Melee',   emoji:'⚔️',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/d/d5/Sword_Standing.png/300px-Sword_Standing.png',
+    desc:'正義感爆表的近戰先鋒，永遠衝在最前面。',
+    traits:['熱血','勇敢','正義感強','衝鋒陷陣'],
+    strengths:['面對危機毫不退縮','能快速進入戰鬥狀態','行動力超強，不會空等機會','為團隊樹立勇氣的榜樣'],
+    cautions:['有時衝動大於計算','容易忽視退路與風險','需要培養更多耐心'] },
+  Rocket:     { name:'Rocket',     cls:'Ranged',  emoji:'🚀',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/5/5d/Rocket_Standing.png/300px-Rocket_Standing.png',
+    desc:'永不停歇的爆破手，用衝勁改變戰局。',
+    traits:['衝勁十足','愛冒險','喜歡刺激','行動派'],
+    strengths:['在壓力下爆發出驚人能量','勇於嘗試未知領域','執行力快、不拖延','帶動現場氣氛'],
+    cautions:['計畫性有待加強','過於追求刺激可能忽略細節','需要學會適時休息'] },
+  Medkit:     { name:'Medkit',     cls:'Support', emoji:'🏥',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/8/8f/Medkit_Standing.png/300px-Medkit_Standing.png',
+    desc:'沉著冷靜的治療師，是團隊不可或缺的依靠。',
+    traits:['冷靜','理性','關心他人','擅長照顧'],
+    strengths:['在混亂中保持清醒','善於發現他人需求','讓團隊持續高效運作','危機處理能力出色'],
+    cautions:['容易犧牲自己的需求','有時過於謹慎，錯過時機','需要學會說「不」'] },
+  Slingshot:  { name:'Slingshot',  cls:'Ranged',  emoji:'🪃',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/3/3e/Slingshot_Standing.png/300px-Slingshot_Standing.png',
+    desc:'永遠面帶笑容的遠程挑戰者，把每場戰鬥都當成派對。',
+    traits:['樂觀','活潑','社交力強','喜歡挑戰'],
+    strengths:['能在逆境中保持正能量','廣泛的人脈與社交網絡','樂於接受新挑戰','感染力強'] ,
+    cautions:['有時不夠嚴肅對待問題','專注力需要提升','避免把一切事情都輕描淡寫'] },
+  Boombox:    { name:'Boombox',    cls:'Support', emoji:'🎵',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/3/30/Boombox_Standing.png/300px-Boombox_Standing.png',
+    desc:'讓整個隊伍沸騰的音浪炸彈，有他在任何時候都熱鬧。',
+    traits:['喜歡熱鬧','善於鼓舞','感染力強','團隊核心'],
+    strengths:['天生的凝聚力，讓團隊充滿活力','激勵他人突破自我','善於調動氣氛','在低潮時穩定軍心'],
+    cautions:['注意不要讓熱情掩蓋個人問題','需要給自己安靜的空間','避免過度依賴外部反饋'] },
+  Skateboard: { name:'Skateboard', cls:'Melee',   emoji:'🛹',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/0/04/Skateboard_Standing.png/300px-Skateboard_Standing.png',
+    desc:'自由靈魂的滑板高手，規則對他來說只是參考。',
+    traits:['自由奔放','享受當下','不喜歡束縛','行動靈活'],
+    strengths:['極強的適應力與靈活性','能在複雜局勢中找到突破口','創意思維不受框架限制','享受當下的能力'],
+    cautions:['長期規劃需要加強','對制度與秩序較不敏感','有時過於隨性'] },
+  Biograft:   { name:'Biograft',   cls:'Melee',   emoji:'🤖',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/4/48/Biograft_Standing.png/300px-Biograft_Standing.png',
+    desc:'高效率的機械戰士，沒有廢話，只有結果。',
+    traits:['直覺型','執行力強','不拖泥帶水','專注目標'],
+    strengths:['驚人的執行效率','目標導向，不易分心','在壓力下越戰越勇','清晰的優先排序'],
+    cautions:['溝通時可能顯得太直接','情感表達有待加強','記得讓夥伴參與決策'] },
+  Hyperlaser: { name:'Hyperlaser', cls:'Ranged',  emoji:'🔦',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/7/77/Hyperlaser_Standing.png/300px-Hyperlaser_Standing.png',
+    desc:'精準到像雷射光一樣的狙擊手，任何目標都逃不出他的視野。',
+    traits:['精準','冷靜','重視效率','高度自律'],
+    strengths:['超高精準度與專注力','自律使其長期保持高水準','邏輯思維清晰','情緒穩定不受干擾'],
+    cautions:['有時對他人期望過高','過於追求完美可能造成壓力','試著接受「夠好」的結果'] },
+  Subspace:   { name:'Subspace',   cls:'Ranged',  emoji:'🌀',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/c/c3/Subspace_Standing.png/300px-Subspace_Standing.png',
+    desc:'充滿好奇心的異次元探索者，永遠在思考別人想不到的問題。',
+    traits:['聰明','好奇','充滿創意','喜歡研究'],
+    strengths:['獨特的視角帶來創新解方','對複雜問題充滿熱情','研究能力深入','能看見他人忽略的細節'],
+    cautions:['有時深陷理論而忘記實作','溝通想法時需要更具體','避免過度分析造成行動癱瘓'] },
+  Katana:     { name:'Katana',     cls:'Melee',   emoji:'🗡️',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/4/4b/Katana_Standing.png/300px-Katana_Standing.png',
+    desc:'嚴格要求自我的武士，榮譽與原則是他的一切。',
+    traits:['紀律嚴明','自我要求高','重視榮譽','堅持原則'],
+    strengths:['超強的自律與意志力','高度可靠，說到做到','道德標準清晰一致','能長期維持高水準表現'],
+    cautions:['對自己和他人的要求可能過嚴','需要學習接受不完美','偶爾放鬆也是成長的一部分'] },
+  Shuriken:   { name:'Shuriken',   cls:'Ranged',  emoji:'🌟',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/3/31/Shuriken_Standing.png/300px-Shuriken_Standing.png',
+    desc:'機靈的忍者，永遠比對手快一步，讓人捉摸不透。',
+    traits:['機智','反應快','喜歡變化','適應力強'],
+    strengths:['在多變環境中如魚得水','快速讀懂局勢並做出反應','思維靈活不受固定模式束縛','善用環境與情境取得優勢'],
+    cautions:['有時缺乏一致性讓人難以預測','長期目標需要更清晰','注意不要變成「什麼都懂、什麼都沒精」'] },
+  VineStaff:  { name:'Vine Staff', cls:'Support', emoji:'🌿',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/0/06/Vine_Staff_Standing.png/300px-Vine_Staff_Standing.png',
+    desc:'溫柔而有力量的自然之守護者，用同理心連結一切。',
+    traits:['溫柔','富有同理心','重視成長','樂於助人'],
+    strengths:['深刻的同理心使他人感到被理解','擅長培育關係與環境','長遠眼光看見成長潛力','能讓團隊感到安心與被支持'],
+    cautions:['需要為自己留一些能量','學習設立健康的界線','避免因過度照顧他人而燃燼自己'] },
+  BanHammer:  { name:'Ban Hammer', cls:'Melee',   emoji:'🔨',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/b/b0/Ban_Hammer_Standing.png/300px-Ban_Hammer_Standing.png',
+    desc:'維護秩序的大錘，公平與責任是他的核心信念。',
+    traits:['責任感強','重視公平','有領導力','維護秩序'],
+    strengths:['強烈的責任感與可靠性','在混亂中建立秩序','公平對待每個人','天然的領導者，讓團隊信服'],
+    cautions:['需要學習彈性應對灰色地帶','避免過於強硬導致摩擦','記得委派任務，不要一人扛所有'] },
+  Scythe:     { name:'Scythe',     cls:'Melee',   emoji:'🌙',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/8/8f/Scythe_Standing.png/300px-Scythe_Standing.png',
+    desc:'神秘獨立的收割者，永遠掌握著局勢的主導權。',
+    traits:['獨立','神秘','自信','掌控全局'],
+    strengths:['強大的自主性與獨立思考','能在複雜局勢中保持自信','策略性思維超群','不依賴他人認可即可行動'],
+    cautions:['開放更多信任給他人','避免過於孤立自己','分享想法能讓局勢朝更好的方向發展'] },
+  Coil:       { name:'Coil',       cls:'Support', emoji:'🔄',
+    img:'https://static.wikia.nocookie.net/phighting/images/thumb/5/5a/Coil_Standing.png/300px-Coil_Standing.png',
+    desc:'多才多藝的萬能角色，永遠有新把戲讓對手措手不及。',
+    traits:['靈活變通','多才多藝','喜歡嘗試','學習力強'],
+    strengths:['超強學習能力，快速掌握新技能','在不同場景自如切換角色','思維廣度讓解法多元','對變化充滿熱情而非恐懼'],
+    cautions:['需要找到自己的核心定位','避免什麼都想嘗試而沒有深度','選擇幾件事做到精通'] },
+};
+
+const KEYS = Object.keys(CHARS);
+
+const QUESTIONS = [
+  {
+    cat: '行動模式',
+    q: '面對一個陌生且複雜的任務，你的第一反應是什麼？',
+    opts: [
+      { text: '直接動手，邊做邊學，先行動再說', scores: {Sword:3, Rocket:2, Skateboard:1} },
+      { text: '先觀察情況，制定計畫後再出發',   scores: {Hyperlaser:3, Katana:2, Medkit:1} },
+      { text: '問問身邊的人，集思廣益',           scores: {Boombox:3, Slingshot:2, VineStaff:1} },
+      { text: '查資料、研究規律，找出最佳解法',  scores: {Subspace:3, Coil:2, Shuriken:1} },
+    ]
+  },
+  {
+    cat: '人際關係',
+    q: '在一個團隊裡，你最自然扮演的角色是什麼？',
+    opts: [
+      { text: '衝鋒陷陣的先鋒，帶頭衝破困難',           scores: {Sword:3, Rocket:2, Biograft:1} },
+      { text: '在後方提供支援，確保大家都能順利',         scores: {Medkit:3, VineStaff:2, BanHammer:1} },
+      { text: '充當橋梁，協調大家的意見與方向',           scores: {Boombox:3, Slingshot:2, Coil:1} },
+      { text: '獨當一面，負責最關鍵卻需要獨立完成的任務', scores: {Scythe:3, Katana:2, Hyperlaser:1} },
+    ]
+  },
+  {
+    cat: '壓力處理',
+    q: '當截止日期逼近，壓力排山倒海而來，你會怎麼做？',
+    opts: [
+      { text: '腎上腺素激升，更專注更高效',          scores: {Rocket:3, Biograft:2, Sword:1} },
+      { text: '深呼吸，按照優先順序逐一處理',         scores: {Hyperlaser:3, Medkit:2, Katana:1} },
+      { text: '找隊友一起分擔，互相支撐度過',          scores: {Boombox:3, VineStaff:2, Slingshot:1} },
+      { text: '迅速找到壓力的根源，打破框架解決',      scores: {Subspace:3, Shuriken:2, Coil:1} },
+    ]
+  },
+  {
+    cat: '決策風格',
+    q: '你需要在兩個選項之間做決定，一個穩妥、一個冒險但回報更高。你傾向：',
+    opts: [
+      { text: '果斷選冒險，勝負就在這一刻',    scores: {Sword:3, Rocket:3, Skateboard:1} },
+      { text: '選穩妥，風險可控才是真智慧',    scores: {Medkit:3, Hyperlaser:2, Katana:1} },
+      { text: '先諮詢他人，做出大家都能接受的決定', scores: {BanHammer:3, Boombox:2, VineStaff:1} },
+      { text: '找到第三種更聰明的可能性',       scores: {Subspace:3, Shuriken:2, Coil:2} },
+    ]
+  },
+  {
+    cat: '競爭心態',
+    q: '在競爭激烈的情況下，你最強的動力是什麼？',
+    opts: [
+      { text: '我要贏，我就是要做到最好',              scores: {Katana:3, Sword:2, Hyperlaser:1} },
+      { text: '讓整個團隊一起赢才是真正的勝利',        scores: {Boombox:3, BanHammer:2, Medkit:1} },
+      { text: '享受過程和刺激本身，輸贏是其次',         scores: {Rocket:3, Skateboard:2, Slingshot:1} },
+      { text: '超越昨天的自己，那就是我的勝利',         scores: {Coil:3, Subspace:2, VineStaff:1} },
+    ]
+  },
+  {
+    cat: '創造力',
+    q: '面對一個需要創新思維的問題，你的思路是什麼？',
+    opts: [
+      { text: '打破規則，用別人不敢想的方式',           scores: {Skateboard:3, Rocket:2, Shuriken:1} },
+      { text: '深度研究現有知識，從中找出全新組合',      scores: {Subspace:3, Coil:2, Hyperlaser:1} },
+      { text: '集合大家的想法，融合出最強方案',          scores: {Boombox:3, Slingshot:2, BanHammer:1} },
+      { text: '相信直覺，用最直接的方式解決問題',        scores: {Biograft:3, Sword:2, Katana:1} },
+    ]
+  },
+  {
+    cat: '情緒管理',
+    q: '當你犯了一個嚴重的錯誤，你的第一反應是什麼？',
+    opts: [
+      { text: '立刻找方法補救，別浪費時間自責',           scores: {Biograft:3, Rocket:2, Sword:1} },
+      { text: '深入分析為什麼出錯，確保下次不重蹈',      scores: {Hyperlaser:3, Katana:2, Subspace:1} },
+      { text: '向信任的人傾訴，消化情緒再繼續',           scores: {VineStaff:3, Medkit:2, Slingshot:1} },
+      { text: '接受錯誤是常態，調整心態繼續前進',         scores: {Coil:3, Skateboard:2, Shuriken:1} },
+    ]
+  },
+  {
+    cat: '領導方式',
+    q: '如果你是一個小組的負責人，你會怎麼帶領大家？',
+    opts: [
+      { text: '身先士卒，以身作則讓大家跟上',              scores: {Sword:3, Katana:2, BanHammer:1} },
+      { text: '設定明確的規則與分工，確保秩序',             scores: {BanHammer:3, Hyperlaser:2, Katana:1} },
+      { text: '打造讓大家都能發揮的舒適環境',               scores: {Boombox:3, VineStaff:2, Medkit:1} },
+      { text: '給每個人自由，讓最好的結果自然浮現',         scores: {Skateboard:3, Scythe:2, Coil:1} },
+    ]
+  },
+  {
+    cat: '社交模式',
+    q: '在一個陌生的社交場合中，你通常是？',
+    opts: [
+      { text: '主動破冰，認識每一個人',              scores: {Slingshot:3, Boombox:2, Sword:1} },
+      { text: '觀察一下再選擇性地介入對話',           scores: {Scythe:3, Katana:2, Subspace:1} },
+      { text: '找到志同道合的人深聊，不求廣但求深',   scores: {VineStaff:3, Medkit:2, Hyperlaser:1} },
+      { text: '視情況決定，機動調整自己的模式',        scores: {Shuriken:3, Coil:2, Skateboard:1} },
+    ]
+  },
+  {
+    cat: '目標設定',
+    q: '對你來說，設定目標最重要的是什麼？',
+    opts: [
+      { text: '目標必須讓我熱血沸騰，越大越好',         scores: {Rocket:3, Sword:2, Slingshot:1} },
+      { text: '目標要有意義，能幫助到我身邊的人',       scores: {Medkit:3, VineStaff:2, BanHammer:1} },
+      { text: '目標要精準可測量，能看到明確的進度',     scores: {Hyperlaser:3, Biograft:2, Katana:1} },
+      { text: '目標是方向，但過程中可以不斷調整',       scores: {Coil:3, Shuriken:2, Skateboard:1} },
+    ]
+  },
+  {
+    cat: '規則與自由',
+    q: '面對一套你認為不合理的規定，你會怎麼辦？',
+    opts: [
+      { text: '直接挑戰它，規則是用來打破的',           scores: {Sword:3, Skateboard:2, Rocket:1} },
+      { text: '透過正當程序提出改變的理由',             scores: {BanHammer:3, Katana:2, Medkit:1} },
+      { text: '在規則內找到能彈性運用的空間',           scores: {Shuriken:3, Coil:2, Scythe:1} },
+      { text: '思考規則背後的深層邏輯，再決定立場',     scores: {Subspace:3, Hyperlaser:2, Biograft:1} },
+    ]
+  },
+  {
+    cat: '面對失敗',
+    q: '當一個你全力以赴的計畫徹底失敗，你的感受最接近？',
+    opts: [
+      { text: '憤怒後立刻站起來，這只是開始',           scores: {Sword:3, Rocket:2, Biograft:1} },
+      { text: '沉澱後把它當成最寶貴的學習',             scores: {Katana:3, Subspace:2, Coil:1} },
+      { text: '讓情緒流過，然後被身邊的人支持著走出來', scores: {VineStaff:3, Slingshot:2, Boombox:1} },
+      { text: '迅速重組，轉換方向繼續往前',             scores: {Shuriken:3, Skateboard:2, Scythe:1} },
+    ]
+  },
+  {
+    cat: '合作模式',
+    q: '你在合作中最無法忍受的是？',
+    opts: [
+      { text: '沒有人敢做決定，大家一直在等',           scores: {Sword:3, Biograft:2, Rocket:1} },
+      { text: '規則不清楚，所有人各行其是',             scores: {BanHammer:3, Katana:2, Hyperlaser:1} },
+      { text: '氣氛低迷，沒有人有熱情',                 scores: {Boombox:3, Slingshot:2, VineStaff:1} },
+      { text: '明明有更好的方法卻沒人想探索',           scores: {Subspace:3, Coil:2, Shuriken:1} },
+    ]
+  },
+  {
+    cat: '獨處傾向',
+    q: '你獨處的時候，最常做什麼？',
+    opts: [
+      { text: '練習技能或鍛鍊，不斷強化自己',           scores: {Katana:3, Hyperlaser:2, Biograft:1} },
+      { text: '思考奇怪的問題或天馬行空地想像',         scores: {Subspace:3, Scythe:2, Coil:1} },
+      { text: '享受當下的移動感或自由玩耍',             scores: {Skateboard:3, Rocket:2, Slingshot:1} },
+      { text: '靜靜地為身邊的人想更多、做更多',         scores: {Medkit:3, VineStaff:2, BanHammer:1} },
+    ]
+  },
+  {
+    cat: '核心價值',
+    q: '對你來說，最重要的事情是什麼？',
+    opts: [
+      { text: '自由——不受任何人與框架束縛',             scores: {Skateboard:3, Scythe:2, Rocket:1} },
+      { text: '成長——每天都比昨天的自己更強',           scores: {Coil:3, Katana:2, Subspace:1} },
+      { text: '連結——與身邊的人一起創造有意義的事',     scores: {VineStaff:3, Boombox:2, Medkit:1} },
+      { text: '勝利——用最好的狀態拿下每一場戰鬥',       scores: {Sword:3, BanHammer:2, Hyperlaser:1} },
+    ]
+  },
+];
+
+const FACTS = [
+  'PHIGHTING! 由 Roblox 遊戲工作室 Phighting! Team 開發，以快節奏的近未來 PvP 對戰聞名。',
+  'Sword 被許多玩家認為是最具代表性的入門角色，擁有強力衝鋒技能。',
+  'Medkit 是支援職中評價最穩定的角色之一，治療能力讓隊伍得以持續作戰。',
+  'Subspace 的技能設計圍繞著空間與異次元概念，深受喜愛獨特玩法的玩家喜愛。',
+  'Boombox 的音樂主題使他在視覺設計和技能上都獨樹一幟。',
+  'Skateboard 以機動性著稱，能在戰場上快速穿梭。',
+  'Hyperlaser 的狙擊精準度讓他在遠距戰鬥中幾乎無人能擋。',
+  'Katana 的設計靈感來自武士精神，技能組合強調精準與紀律。',
+  'Coil 是多功能角色，能適應多種戰術環境。',
+  'Ban Hammer 象徵著秩序，是需要控場的局面中的最佳選擇。',
+  'Vine Staff 是自然元素角色，治療與控制兼備。',
+  'Shuriken 的快速攻擊模式讓對手難以預測下一步。',
+  'Scythe 的黑暗風格讓他成為許多玩家最愛的「神秘系」角色。',
+  'Biograft 是高效率的近戰機械戰士，攻擊直接且有力。',
+  'Rocket 的爆炸性技能在群戰中能創造驚人的擊退效果。',
+];
+
+/* ============================
+   STATE
+   ============================ */
+let currentQ = 0;
+let answers = new Array(15).fill(null);
+let scores = {};
+
+/* ============================
+   INIT
+   ============================ */
+function resetScores() {
+  scores = {};
+  KEYS.forEach(k => scores[k] = 0);
+}
+
+function startQuiz() {
+  currentQ = 0;
+  answers = new Array(15).fill(null);
+  resetScores();
+  showPanel('panel-quiz');
+  renderQuestion();
+}
+
+function retryQuiz() {
+  showPanel('panel-intro');
+}
+
+/* ============================
+   QUIZ LOGIC
+   ============================ */
+function renderQuestion() {
+  const data = QUESTIONS[currentQ];
+  document.getElementById('q-cat').textContent = data.cat;
+  document.getElementById('q-num-big').textContent = String(currentQ+1).padStart(2,'0');
+  document.getElementById('q-text').textContent = data.q;
+
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+
+  const labels = ['A','B','C','D'];
+  data.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn' + (answers[currentQ] === i ? ' selected' : '');
+    btn.innerHTML = `<span class="opt-label">${labels[i]}</span>${opt.text}`;
+    btn.onclick = () => selectOption(i);
+    grid.appendChild(btn);
+  });
+
+  // progress
+  const pct = Math.round((currentQ / 15) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-num').textContent = currentQ + ' / 15';
+
+  // nav
+  document.getElementById('btn-prev').disabled = currentQ === 0;
+  document.getElementById('btn-next').disabled = answers[currentQ] === null;
+  document.getElementById('btn-next').textContent = currentQ === 14 ? '查看結果 ✦' : '下一題 →';
+
+  // fact
+  document.getElementById('fact-text').textContent = FACTS[currentQ % FACTS.length];
+
+  // animate card
+  const card = document.getElementById('q-card');
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = '';
+}
+
+function selectOption(idx) {
+  answers[currentQ] = idx;
+  document.querySelectorAll('.opt-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('btn-next').disabled = false;
+}
+
+function nextQ() {
+  if (answers[currentQ] === null) return;
+  if (currentQ === 14) {
+    computeResult();
+    return;
+  }
+  currentQ++;
+  renderQuestion();
+}
+
+function prevQ() {
+  if (currentQ === 0) return;
+  currentQ--;
+  renderQuestion();
+}
+
+/* ============================
+   RESULT LOGIC
+   ============================ */
+function computeResult() {
+  document.getElementById('loading').classList.add('show');
+  resetScores();
+
+  QUESTIONS.forEach((q, qi) => {
+    const ans = answers[qi];
+    if (ans === null) return;
+    const sc = q.opts[ans].scores;
+    Object.entries(sc).forEach(([k, v]) => {
+      if (scores[k] !== undefined) scores[k] += v;
+    });
+  });
+
+  setTimeout(() => {
+    document.getElementById('loading').classList.remove('show');
+    renderResult();
+    showPanel('panel-result');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }, 1800);
+}
+
+function renderResult() {
+  const sorted = KEYS.slice().sort((a,b) => scores[b] - scores[a]);
+  const top = sorted[0];
+  const second = sorted[1];
+  const char = CHARS[top];
+  const char2 = CHARS[second];
+
+  const maxPossible = 45; // rough max
+  const pct = Math.min(99, Math.round((scores[top] / maxPossible) * 100));
+
+  // name
+  document.getElementById('r-name').textContent = char.name;
+
+  // class badge
+  const clsEl = document.getElementById('r-class');
+  const clsMap = {Melee:'class-melee', Ranged:'class-ranged', Support:'class-support'};
+  clsEl.innerHTML = `<span class="result-class ${clsMap[char.cls]}">${char.cls}</span>`;
+
+  // image
+  const wrap = document.getElementById('r-img-wrap');
+  const img = new Image();
+  img.onload = () => { wrap.innerHTML = ''; wrap.appendChild(img); img.style.cssText='width:100%;height:100%;object-fit:cover;'; };
+  img.onerror = () => { wrap.innerHTML = `<span class="result-img-placeholder">${char.emoji}</span>`; };
+  img.src = char.img;
+  img.alt = char.name;
+  // show placeholder while loading
+  wrap.innerHTML = `<span class="result-img-placeholder">${char.emoji}</span>`;
+
+  // pct
+  document.getElementById('r-pct').textContent = pct + '%';
+
+  // why
+  const topTraits = getTopTraits(sorted);
+  document.getElementById('r-why').textContent = generateWhy(top, topTraits, answers);
+
+  // traits
+  const traitEl = document.getElementById('r-traits');
+  traitEl.innerHTML = '';
+  char.traits.forEach(t => {
+    const li = document.createElement('li');
+    li.textContent = t;
+    traitEl.appendChild(li);
+  });
+
+  // strengths
+  const strEl = document.getElementById('r-strengths');
+  strEl.innerHTML = '';
+  char.strengths.forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = s;
+    strEl.appendChild(li);
+  });
+
+  // cautions
+  const cauEl = document.getElementById('r-cautions');
+  cauEl.innerHTML = '';
+  char.cautions.forEach(c => {
+    const li = document.createElement('li');
+    li.textContent = c;
+    cauEl.appendChild(li);
+  });
+
+  // second char
+  renderSecond(second, char2, top, char);
+
+  // chart
+  renderChart(sorted.slice(0, 10));
+}
+
+function getTopTraits(sorted) {
+  // Derive trait themes from answer patterns
+  const traits = [];
+  const ans = answers;
+
+  // Q1: action style
+  if (ans[0] === 0) traits.push('行動優先');
+  else if (ans[0] === 1) traits.push('策略導向');
+  else if (ans[0] === 2) traits.push('集體協作');
+  else traits.push('深度研究');
+
+  // Q4: competition
+  if (ans[4] === 0) traits.push('強烈競爭心');
+  else if (ans[4] === 1) traits.push('團隊合作為先');
+  else if (ans[4] === 2) traits.push('享受過程');
+  else traits.push('自我超越');
+
+  // Q14: core value
+  if (ans[14] === 0) traits.push('追求自由');
+  else if (ans[14] === 1) traits.push('持續成長');
+  else if (ans[14] === 2) traits.push('重視連結');
+  else traits.push('渴望勝利');
+
+  return traits;
+}
+
+function generateWhy(key, topTraits, ans) {
+  const char = CHARS[key];
+  const actionStyle = ['你傾向在行動中學習，先衝再說', '你喜歡事前充分準備，把每一步都想清楚', '你善用集體的力量，相信同伴的智慧', '你用深度思考找到別人沒想到的解法'][ans[0] ?? 0];
+  const stressStyle = ['高壓下你的爆發力反而更強', '壓力讓你更加冷靜與有條理', '你靠著人與人的連結渡過難關', '你能快速找到問題核心並打破僵局'][ans[2] ?? 0];
+  const valueStyle = ['自由是你最核心的驅動力', '不斷成長是你每天前進的引擎', '與他人的連結讓你的行動充滿意義', '追求勝利的熱情驅動著你的一切'][ans[14] ?? 0];
+
+  return `${actionStyle}，這和 ${char.name} 的特質高度吻合。${stressStyle}，這正是 ${char.name} 在戰場上展現的姿態。${valueStyle}，讓你與 ${char.name} 的靈魂共鳴——${topTraits.join('、')}，這些都是你的核心印記。`;
+}
+
+function renderSecond(key2, char2, key1, char1) {
+  const wrap = document.getElementById('r-second');
+  const similarity = getSimilarityReason(key1, key2);
+  const difference = getDifferenceReason(key1, key2);
+
+  const imgDiv = document.createElement('div');
+  imgDiv.className = 'second-img';
+
+  const img = new Image();
+  img.onload = () => { imgDiv.innerHTML = ''; imgDiv.appendChild(img); img.style.cssText='width:100%;height:100%;object-fit:cover;'; };
+  img.onerror = () => { imgDiv.textContent = char2.emoji; };
+  img.src = char2.img;
+  imgDiv.textContent = char2.emoji; // placeholder
+
+  const info = document.createElement('div');
+  info.className = 'second-info';
+  info.innerHTML = `
+    <div class="second-name">${char2.name}</div>
+    <div class="second-text">
+      <strong style="color:var(--text)">相似原因：</strong>${similarity}<br><br>
+      <strong style="color:var(--text)">與第一名的差異：</strong>${difference}
+    </div>
+  `;
+
+  wrap.innerHTML = '';
+  wrap.appendChild(imgDiv);
+  wrap.appendChild(info);
+}
+
+function getSimilarityReason(k1, k2) {
+  const c1 = CHARS[k1]; const c2 = CHARS[k2];
+  if (c1.cls === c2.cls) return `兩者同屬 ${c1.cls} 職業，在行動與定位上有相似的節奏感。`;
+  const shared = c1.traits.filter(t => c2.traits.includes(t));
+  if (shared.length > 0) return `你們都有「${shared[0]}」的特質，在許多情境下會做出相近的選擇。`;
+  return `在決策模式與面對壓力的方式上，${k1} 和 ${k2} 有著意外相似的內在邏輯。`;
+}
+
+function getDifferenceReason(k1, k2) {
+  const c1 = CHARS[k1]; const c2 = CHARS[k2];
+  if (c1.cls !== c2.cls) return `${k1} 是 ${c1.cls} 風格，更傾向${c1.traits[0]}；而 ${k2} 是 ${c2.cls} 風格，帶有更多${c2.traits[0]}的色彩。`;
+  return `${k1} 更注重${c1.traits[1]}，${k2} 則在${c2.traits[1]}上有著獨特的體現。`;
+}
+
+function renderChart(sortedKeys) {
+  const el = document.getElementById('r-chart');
+  el.innerHTML = '';
+  const maxScore = scores[sortedKeys[0]] || 1;
+
+  const colors = [
+    'linear-gradient(90deg,#ffe600,#ff2d78)',
+    'linear-gradient(90deg,#b44cff,#00f5ff)',
+    'linear-gradient(90deg,#00ff9d,#00f5ff)',
+    'linear-gradient(90deg,#ff2d78,#b44cff)',
+    'linear-gradient(90deg,#00f5ff,#00ff9d)',
+    'linear-gradient(90deg,#ffe600,#b44cff)',
+    'linear-gradient(90deg,#ff2d78,#ffe600)',
+    'linear-gradient(90deg,#00ff9d,#b44cff)',
+    'linear-gradient(90deg,#00f5ff,#ff2d78)',
+    'linear-gradient(90deg,#b44cff,#ffe600)',
+  ];
+
+  sortedKeys.forEach((k, i) => {
+    const w = maxScore > 0 ? Math.round((scores[k] / maxScore) * 100) : 0;
+    const li = document.createElement('li');
+    li.className = 'chart-item';
+    li.innerHTML = `
+      <span class="chart-name">${CHARS[k].name}</span>
+      <div class="chart-track"><div class="chart-fill" style="width:0%;background:${colors[i%colors.length]}"></div></div>
+      <span class="chart-val">${scores[k]}</span>
+    `;
+    el.appendChild(li);
+    setTimeout(() => {
+      li.querySelector('.chart-fill').style.width = w + '%';
+    }, 200 + i * 80);
+  });
+}
+
+/* ============================
+   UI HELPERS
+   ============================ */
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function shareResult() {
+  const name = document.getElementById('r-name').textContent;
+  const pct = document.getElementById('r-pct').textContent;
+  const text = `我在 PHIGHTING! 心理測驗中，測出了 ${name}（相似度 ${pct}）！你是誰呢？`;
+  if (navigator.share) {
+    navigator.share({ title: '你是 PHIGHTING! 裡的誰？', text });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('已複製到剪貼簿！'));
+  } else {
+    showToast('已複製到剪貼簿！');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ============================
+   KEYBOARD SUPPORT
+   ============================ */
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('panel-quiz').classList.contains('active')) return;
+  const labels = ['a','b','c','d'];
+  const idx = labels.indexOf(e.key.toLowerCase());
+  if (idx >= 0 && idx < QUESTIONS[currentQ].opts.length) selectOption(idx);
+  if (e.key === 'ArrowRight' || e.key === 'Enter') {
+    if (answers[currentQ] !== null) nextQ();
+  }
+  if (e.key === 'ArrowLeft') prevQ();
+});
+</script>
+</body>
+</html>
